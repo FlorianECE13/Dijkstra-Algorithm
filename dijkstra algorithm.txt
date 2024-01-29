@@ -1,0 +1,173 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Arrays;
+
+public class Node {
+	   String id;
+	   String name;
+	    
+	    
+	   Node(){}
+	   Node(String id,String name){
+		   this.id=id;
+		   this.name=name;
+	   }
+	   public String toString(){
+		   return name;
+	   }
+}
+
+
+public class Edge {
+	String id;
+	Node source;
+	Node destination;
+	int cost;
+	
+	Edge(){}
+	
+	Edge(String id,Node source,Node destination,int cost){
+		this.id=id;
+		this.source=source;
+		this.destination=destination;
+		this.cost=cost;
+	}
+	
+	public String toString() {
+		return (source.name + "->" + destination.name);
+	}
+}
+
+
+
+public class Graph {
+	ArrayList<Node> graphNodes;
+	ArrayList<Edge> graphEdges;
+	
+	Graph(){
+		graphNodes=new ArrayList<Node>();
+		graphEdges=new ArrayList<Edge>();
+	}
+	Graph(Graph myGraph){
+		this.graphNodes= new ArrayList<>(myGraph.graphNodes);
+		this.graphEdges=new ArrayList<>(myGraph.graphEdges);
+	}
+	
+	void addEdge(String id,int sourceIndex, int destIndex,int cost){
+		Edge edge=new Edge(id,graphNodes.get(sourceIndex),graphNodes.get(destIndex),cost);
+		graphEdges.add(edge);
+		
+	}
+	
+	public String toString() {
+		StringBuilder result=new StringBuilder();
+		for(Edge edge: graphEdges) {
+			result.append(edge.toString()).append(", cost:").append(edge.cost).append("\n");
+	}
+	
+		return result.toString();
+	}
+}
+
+
+
+
+public class DijkstraAlgorithm {
+	final int apeiro=10000000;
+	Graph myGraph;
+	ArrayList<Node> unusedNodes;
+	HashMap<Node,Integer> distance;
+	HashMap<Node,ArrayList<Edge>> adjNodes;
+	
+	DijkstraAlgorithm() {
+	    distance=new HashMap<>();
+	    adjNodes=new HashMap<>();
+	    unusedNodes=new ArrayList<>();
+	}
+	
+	DijkstraAlgorithm(Graph myGraph)
+	{
+		this.myGraph=myGraph;
+		distance=new HashMap<>();
+	    adjNodes=new HashMap<>();
+	    unusedNodes=new ArrayList<>();
+	}
+	
+	HashMap<Node,ArrayList<Edge>> getNeighbors(){
+		for(Node node: myGraph.graphNodes) {
+			ArrayList<Edge> edge=new ArrayList<Edge>();
+			for(Edge edge1: myGraph.graphEdges) {
+				if(edge1.source==node)
+					edge.add(edge1);
+			}
+			adjNodes.put(node,edge);
+		}
+		return adjNodes;
+	}
+	
+	
+	
+	
+	HashMap<Node,Integer> dijkstra(Node startingNode){
+	    unusedNodes.add(startingNode);
+	    ArrayList<Node> usedNodes = new ArrayList<>();
+		for(Node node : myGraph.graphNodes) {
+			distance.put(node, apeiro);
+		}
+		distance.put(startingNode,0);
+		
+        getNeighbors();
+		
+		while(!unusedNodes.isEmpty()) {
+			Node node=getMinimum(distance);
+			ArrayList<Edge> edges=adjNodes.get(node);
+			if(edges!=null){
+			    for(Edge edge: edges) {
+			        unusedNodes.remove(node);
+			        if(unusedNodes.contains(edge.destination)==true || usedNodes.contains(edge.destination)==true)
+			            findMinimumDistance(node);
+			        else{
+			    	    findMinimumDistance(node);
+    			        unusedNodes.add(edge.destination);
+    			        usedNodes.add(node);
+			        }
+			    }
+			}
+			if(unusedNodes.isEmpty()==true)
+			    break;
+			
+		}
+		return distance;
+	}
+
+
+	Node getMinimum(HashMap<Node,Integer> tempnodes) {
+		Node min_node=null;
+		int min_distance = apeiro;
+		for(Node node: unusedNodes) {
+			int node_distance=tempnodes.get(node);
+			if(node_distance<min_distance) {
+				min_distance=node_distance;
+				min_node=node;
+			}
+		}
+		return min_node;
+	}
+	
+    HashMap<Node,Integer> findMinimumDistance(Node node){
+        getNeighbors();
+        ArrayList<Edge> edges=adjNodes.get(node);
+        if ( edges != null) {
+            for (Edge edge : edges) {
+                int Distance = distance.get(edge.destination);
+                int new_Distance = distance.get(edge.source) + edge.cost;
+                if (new_Distance < Distance) {
+                    distance.put(edge.destination, new_Distance);
+                }
+            }
+        }
+        return distance;
+    }
+}
+
+
